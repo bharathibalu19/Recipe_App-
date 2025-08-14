@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ recipe.name }}</title>
+</head>
+<body>
+<h2>{{ recipe.name }}</h2>
+<img src="{{ recipe.image_url }}" alt="{{ recipe.name }}">
+<h3>Ingredients</h3>
+<ul>
+    {% for ing in recipe.ingredients.all %}
+        <li>{{ ing.measure }} {{ ing.name }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Instructions</h3>
+<p>{{ recipe.instructions }}</p>
+
+<a href="/">Back to Search</a>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!-- <!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <title>Recipe App</title>
+    <link rel="stylesheet" href="{% static 'recipes/style.css' %}">
+</head>
+<body>
+<header>
+    <h1>Recipe App</h1>
+    <form method="GET" action="">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search for recipes...">
+        <button type="submit">Search</button>
+    </form>
+</header>
+
+<main>
+    {% if recipes %}
+        <div class="recipe_container">
+            {% for recipe in recipes %}
+                <div class="recipe">
+                    <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}">
+                    <h3>{{ recipe.name }}</h3>
+                    <p>{{ recipe.area }} Dish</p>
+                    <p>Category: {{ recipe.category }}</p>
+                    <a href="{% url 'recipe_detail' recipe.pk %}">View Recipe</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if query %}
+            <p>No recipes found.</p>
+        {% else %}
+            <p>Search your favourite recipes...</p>
+        {% endif %}
+    {% endif %}
+</main>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'recipes/style.css' %}">
+    <style>
+        form button,
+        .searchBox {
+            border: none;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        form button {
+            background-color: #f44336;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color .2s ease-in-out;
+
+        }
+
+        form button:hover {
+            background-color: #ff5c5c;
+        }
+
+
+        /* Main section starts from here  */
+        .recipe_container {
+            text-align: center;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-gap: 40px;
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            place-items: center;
+        }
+
+        .recipe {
+            background-color: #fff;
+            display: flex;
+            color: #000;
+            flex-direction: column;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(78, 73, 73, 0.1), -5px -5px 10px rgba(34, 34, 34, .5);
+            cursor: pointer;
+            max-width: 350px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .recipe:hover {
+            transform: scale(1.02);
+        }
+
+
+        .recipe img {
+            height: 300px;
+        }
+
+        .recipe h3 {
+            font-size: 24px;
+        }
+
+        .recipe h3 {
+            font-size: 20px;
+            color: #4a4a4a;
+            margin: 5px 0;
+        }
+
+        .recipe span {
+            font-weight: bold;
+        }
+
+        .recipe button {
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #f44336;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 18px auto;
+            color: #fff;
+            border: none;
+        }
+
+        .recipe button:hover,
+        .recipe_close_btn:hover {
+            background-color: rgb(255, 92, 92);
+            transform: scale(.9);
+        }
+
+        .recipe_details {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #694c2f;
+            -webkit-transform: translate(-50%, -50%);
+            border-radius: 12px;
+            width: 40%;
+            height: 60%;
+            font-size: 20px;
+            transition: all 0.5s ease-in-out;
+            overflow-y: scroll;
+        }
+
+        /* adding scrollbar to the popup */
+
+        .recipe_details::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .recipe_details::-webkit-scrollbar-thumb {
+            background-color: #b5b5ba;
+            border-radius: 16px;
+            --webkit-border-radius: 16px;
+        }
+
+
+        .recipe_details_content {
+            padding: 30px;
+        }
+
+        .recipeName {
+            text-align: center;
+            text-transform: uppercase;
+            text-decoration: underline;
+
+        }
+
+        .ingredientList {
+            margin-bottom: 10px;
+            margin-left: 20px;
+        }
+
+        .ingredientList li {
+            margin-top: 10px;
+            margin-left: 20px;
+
+        }
+
+        .instructions {
+            margin-top: 30px;
+        }
+
+        .instructions p {
+            line-height: 30px;
+            white-space: pre-line;
+
+        }
+
+        .recipe_close_btn {
+            border: none;
+            background-color: #f44336;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 18px;
+            color: #fff;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .recipeName,
+        .ingredientList,
+        .instructions {
+            margin-bottom: 10px;
+        }
+
+
+
+        body::-webkit-scrollbar {
+            width: 16px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: #b5b5ba;
+        }
+
+        body::-webkit-scrollbar-track {
+            background-color: #ebebeb;
+        }
+
+        #linkedin_btn {
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f44336;
+            font-size: 20px;
+            border: none;
+            color: #fff;
+        }
+
+
+
+
+
+        /* ---------------------------------------------Responsive design -------------------------------------- */
+
+
+
+        @media(max-width:1440px) {
+            .header nav {
+                padding: 40px;
+            }
+
+            .header nav h1 {
+                font-size: 35px;
+            }
+
+            .searchBox {
+                width: 700px;
+
+            }
+
+            .recipe img {
+                height: 400px;
+            }
+
+            .recipe_details {
+                width: 80%;
+                height: 70%;
+                font-size: 25px;
+            }
+
+            .recipe_details_content {
+                padding: 20px;
+            }
+
+            .recipe_container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                grid-gap: 60px;
+            }
+
+            .recipe_container h2 {
+                font-size: 30px;
+            }
+
+            .recipe_close_btn i {
+                font-size: 50px;
+            }
+
+            .recipe_close_btn {
+                padding: 8px;
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        @media(max-width:1025px) {
+            .header nav {
+                padding: 40px;
+                display: block;
+            }
+
+            .header nav h1 {
+                font-size: 35px;
+                text-align: center;
+            }
+
+            .searchBox,
+            .searchBtn {
+                margin-top: 20px;
+            }
+
+            recipe_close_btn i {
+                font-size: 50px;
+            }
+
+            .searchBox {
+                width: 80%;
+                height: 50px;
+
+            }
+
+            .searchBtn {
+                width: 20%;
+            }
+
+            .recipe img {
+                height: 400px;
+            }
+
+            .recipe_details {
+                width: 80%;
+                height: 70%;
+                font-size: 25px;
+            }
+
+            .recipe_details_content {
+                padding: 20px;
+            }
+
+            .recipe_container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                grid-gap: 60px;
+            }
+
+            .recipe_container h2 {
+                font-size: 30px;
+            }
+        }
+
+
+
+        @media(max-width:769px) {
+            .header nav {
+                padding: 10px;
+                display: block;
+            }
+
+            .searchBox {
+                width: 80%;
+
+            }
+
+            form button,
+            .searchBox {
+                margin-top: 20px;
+
+            }
+
+            .recipe_container {
+                margin: auto;
+                width: 100%;
+                padding: 10px;
+            }
+
+
+
+            .recipe img {
+                height: 300px;
+            }
+
+            .recipe_details {
+                width: 90%;
+                height: 70%;
+                font-size: 25px;
+            }
+
+
+            .recipe_details_content {
+                padding: 20px;
+            }
+
+        }
+
+
+
+        @media(max-width:426px) {
+            .header nav {
+                padding: 10px;
+                display: block;
+            }
+
+            .header nav h1 {
+                font-size: 25px;
+                text-align: center;
+            }
+
+            form button {
+                width: 20%;
+            }
+
+            .searchBox {
+                width: 80%;
+            }
+
+            form button,
+            .searchBox {
+                margin-top: 20px;
+            }
+
+
+            .recipe img {
+                height: 300px;
+            }
+
+            .recipe h3 {
+                font-size: 20px;
+            }
+
+
+            .recipe_details {
+                width: 80%;
+                height: 70%;
+                font-size: 15px;
+            }
+
+
+            .recipe_details_content {
+                padding: 10px;
+            }
+
+            .recipe_close_btn i {
+                font-size: 30px;
+            }
+
+            .recipe_close_btn {
+                padding: 8px;
+                width: 40px;
+                height: 40px;
+
+            }
+        }
+
+
+
+        @media(max-width:376px) {
+            .header nav {
+                display: block;
+            }
+
+            .header nav h1 {
+                font-size: 23px;
+            }
+
+            form button {
+                width: 25%;
+            }
+
+            .searchBox {
+                width: 75%;
+            }
+
+            form button,
+            .searchBox {
+                margin-top: 20px;
+            }
+
+
+            .recipe img {
+                height: 300px;
+            }
+
+            .recipe h3 {
+                font-size: 20px;
+            }
+
+
+            .recipe_details {
+                width: 90%;
+            }
+
+
+            .recipe_details_content {
+                padding: 5px;
+            }
+
+
+        }
+
+        @media(max-width:321px) {
+            .header nav {
+                padding: 5px;
+                display: block;
+            }
+
+            .header nav h1 {
+                font-size: 20px;
+                text-align: center;
+            }
+
+            .header form button {
+                width: 30%;
+            }
+
+            .searchBox {
+                width: 70%;
+            }
+
+            .recipe img {
+                max-height: 200px;
+                min-width: 80vw;
+            }
+
+            .recipe_details {
+                width: 95%;
+                height: 70%;
+                font-size: 15px;
+            }
+
+
+            .recipe_close_btn i {
+                font-size: 20px;
+            }
+
+            .recipe_close_btn {
+                padding: 8px;
+                width: 30px;
+                height: 30px;
+
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- <header>
+    <h1>🍵 Recipe App 🍴</h1>
+    <form method="get" action="">
+        <div class="search-container">
+            <input type="text" name="q" placeholder="Search recipes..." value="{{ request.GET.q }}">
+            <button type="submit">Search</button>
+        </div>
+    </form>
+</header> -->
+    <header class="header">
+        <nav>
+            <h1><i class="fa-solid fa-mug-hot fa-bounce" style="color:#fae596"></i> Recipe App <i
+                    class="fa-solid fa-utensils fa-bounce" style="color:#fae596"></i></h1>
+            <form>
+                <input type="text" placeholder="search for recipes ex.cake , pizza" class="searchBox">
+                <button type="submit" class="searchBtn">search</button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <!-- <div class="recipe-grid">
+        {% for recipe in recipes %}
+        <div class="recipe-card">
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}"> -->
+        <!-- <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}"> -->
+        <!-- <h2>{{ recipe.name }}</h2>
+            <p><strong>{{ recipe.nationality }} Dish</strong></p>
+            <p>Belongs to <strong>{{ recipe.category }}</strong></p>
+            <a href="{% url 'recipe_detail' recipe.id %}" class="btn">View Recipe</a>
+        </div>
+        {% empty %}
+        <p>No recipes found.</p>
+        {% endfor %}
+    </div> -->
+        <section>
+            <div class="recipe_container">
+                <h2>Search your favourite recipes... </h2>
+
+                <a href="https://www.linkedin.com/posts/nitrajsinh-solanki-647b11293_cookinginstruction-recipeapp-cookingmadeeasy-activity-7209266231256772608-u-IJ?utm_source=share&utm_medium=member_android"
+                    target="_blank"><button id="linkedin_btn">CONNECT WITH ME <i class="fa-brands fa-linkedin"
+                            style="font-size:25px; margin:3px;"></i></button></a>
+
+            </div>
+
+            <div class="recipe_details">
+                <button type="button" class="recipe_close_btn"><i class="fas fa-times"></i></button>
+                <div class="recipe_details_content">
+
+                </div>
+            </div>
+
+
+
+        </section>
+    </main>
+    <script>
+
+
+        const searchBtn = document.querySelector(".searchBtn");
+        const searchBox = document.querySelector(".searchBox");
+        const recipe_container = document.querySelector(".recipe_container");
+
+        const recipe_close_btn = document.querySelector(".recipe_close_btn");
+        const recipe_details_content = document.querySelector(".recipe_details_content");
+
+
+        searchBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            const searchInput = searchBox.value.trim()
+            fetchRecipes(searchInput);
+
+            if (!searchInput) {
+                recipe_container.innerHTML = `<h2>Type the meal in the search box</h2>`
+                return;
+            }
+        })
+
+        //function to get recipes
+        const fetchRecipes = async (query) => {
+            recipe_container.innerHTML = `<h2>Fetching Recipes....... <i class="fa-solid fa-spinner fa-spin"></i></h2>`
+            try {
+                const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`
+
+                const data = await fetch(url);
+                const response = await data.json();
+
+                recipe_container.innerHTML = "";
+                response.meals.forEach(meal => {
+                    const recipeDiv = document.createElement('div');
+                    recipeDiv.classList.add("recipe");
+
+                    recipeDiv.innerHTML = `
+            <img src = "${meal.strMealThumb}">
+            <h3>${meal.strMeal}</h3>
+            <p><span>${meal.strArea} <span>Dish</p>
+            <p>Belongs to <span>${meal.strCategory}</span></p>
+
+            `
+                    const button = document.createElement("button");
+                    button.textContent = "View Recipe";
+                    recipeDiv.appendChild(button);
+
+                    // adding event listener to  recipe buttom
+                    button.addEventListener("click", () => {
+                        openRecipePopup(meal);
+                    })
+                    recipe_container.appendChild(recipeDiv)
+
+                })
+            } catch (e) {
+                recipe_container.innerHTML = `<h2>error in fetching recipes..<br><br><i class="fa-solid fa-triangle-exclamation" style="color:red;font-size:50px;"></i></h2>`
+
+            }
+
+        }
+
+
+        const openRecipePopup = (meal) => {
+            recipe_details_content.innerHTML =
+                `<h2 class="recipeName">${meal.strMeal}</h2>
+        <h3>Ingrediants</h3>
+        <ul class="ingredientList">${fetchIngrediants(meal)}</ul>
+        <div class="instructions">
+            <h3>Instructions :</h3>
+             <p>${meal.strInstructions}</p>
+        </div>
+        
+        `
+            recipe_details_content.parentElement.style.display = "block"
+
+        }
+
+        //to fetch ingrediants and measurements
+        const fetchIngrediants = (meal) => {
+            let ingrediantsList = "";
+            for (let i = 1; i <= 20; i++) {
+                const ingrediant = meal[`strIngredient${i}`];
+                if (ingrediant) {
+                    const measure = meal[`strMeasure${i}`];
+                    ingrediantsList += `<li>${measure} ${ingrediant}</li>`
+                }
+                else {
+                    break;
+                }
+            }
+
+            return ingrediantsList;
+        }
+
+        recipe_close_btn.addEventListener("click", () => {
+            recipe_details_content.parentElement.style.display = "none";
+        })
+    </script>
+
+</body>
+
+</html>
